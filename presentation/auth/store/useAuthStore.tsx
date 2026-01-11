@@ -65,7 +65,6 @@ export const useAuthStore = create<AuthState>()((set, get) => ({
 
   createAccount: async ({ email, fullName, password }) => {
     const account = await authCreateAccount({ email, fullName, password });
-    console.log(account);
 
     if (!account) return false;
     const { token, ...user } = account;

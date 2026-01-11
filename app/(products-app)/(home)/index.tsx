@@ -1,24 +1,29 @@
-
-
-import { useThemeColor } from '@/presentation/theme/hooks/use-theme-color';
-import { Text, View } from 'react-native';
+import { ProductList } from "@/presentation/products/components/ProductList";
+import { useProducts } from "@/presentation/products/hooks/useProducts";
+import { FAB } from "@/presentation/theme/components/FAB";
+import { router } from "expo-router";
+import { ActivityIndicator, View } from "react-native";
 const HomeScreen = () => {
+  const { productQuery, loadNextPage } = useProducts();
 
-  const primary = useThemeColor({}, 'primary');
-
+  if (productQuery.isLoading) {
+    return (
+      <View style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
+        <ActivityIndicator size={30} />
+      </View>
+    );
+  }
   return (
-    <View style={{paddingTop: 100, paddingHorizontal:20}}>
-      <Text style={{
-        color: primary,
-        fontFamily: 'Kanit-Bold',
-      }}>HomeScreen</Text>
-       <Text style={{
-        fontFamily: 'Kanit-Regular',
-      }}>HomeScreen</Text>
-       <Text style={{
-        fontFamily: 'Kanit-Thin',
-      }}>HomeScreen</Text>
+    <View style={{ paddingHorizontal: 10 }}>
+      <ProductList
+        loadNextPage={loadNextPage}
+        products={productQuery.data?.pages.flat() ?? []}
+      />
+      <FAB
+        iconName="add-outline"
+        onPress={() => router.push("/(products-app)/product/new")}
+      />
     </View>
-  )
-}
-export default HomeScreen
+  );
+};
+export default HomeScreen;

@@ -4,6 +4,7 @@ import {
   DefaultTheme,
   ThemeProvider,
 } from "@react-navigation/native";
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { useFonts } from "expo-font";
 import { SplashScreen, Stack } from "expo-router";
 import { StatusBar } from "expo-status-bar";
@@ -31,21 +32,30 @@ export default function RootLayout() {
       SplashScreen.hideAsync();
     }
   }, [loaded]);
- 
 
+  const queryClient = new QueryClient({
+    defaultOptions: {
+      queries: {
+        retry: false,
+      },
+    },
+  });
   return (
-    <GestureHandlerRootView style={{ backgroundColor: backgroundColor, flex: 1 }}>
-      <ThemeProvider value={colorScheme === "dark" ? DarkTheme : DefaultTheme}>
-        <Stack
-          screenOptions={{
-            headerShown: false,
-          }}
+    <GestureHandlerRootView
+      style={{ backgroundColor: backgroundColor, flex: 1 }}
+    >
+      <QueryClientProvider client={queryClient}>
+        <ThemeProvider
+          value={colorScheme === "dark" ? DarkTheme : DefaultTheme}
         >
-          {/* <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
-        <Stack.Screen name="modal" options={{ presentation: 'modal', title: 'Modal' }} /> */}
-        </Stack>
-        <StatusBar style="auto" />
-      </ThemeProvider>
+          <Stack
+            screenOptions={{
+              headerShown: false,
+            }}
+          ></Stack>
+          <StatusBar style="auto" />
+        </ThemeProvider>
+      </QueryClientProvider>
     </GestureHandlerRootView>
   );
 }

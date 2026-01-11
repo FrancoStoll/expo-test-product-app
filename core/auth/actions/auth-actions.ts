@@ -1,5 +1,5 @@
 import { isAxiosError } from "axios";
-import { productsApi } from "../api/productsApi";
+import { productsApi } from "../../api/productsApi";
 import { User } from "../interfaces/user";
 
 
@@ -45,7 +45,7 @@ export const authLogin = async (email: string, password: string) => {
             email, password,
         });
 
-        console.log(data);
+      
 
         return returnUserToken(data);
     } catch (error) {
