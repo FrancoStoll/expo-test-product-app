@@ -1,33 +1,50 @@
 import { Size } from "@/core/products/interfaces/product.interface";
 import { ProductImages } from "@/presentation/products/components/ProductImages";
 import { useProduct } from "@/presentation/products/hooks/useProduct";
+import { useCameraStore } from "@/presentation/store/useCameraStore";
+import { MenuIconButton } from "@/presentation/theme/components/MenuIconButton";
 import { ThemedTextInput } from "@/presentation/theme/components/themed-text-input";
 import { ThemedView } from "@/presentation/theme/components/themed-view";
 import { ThemedButton } from "@/presentation/theme/components/ThemedButton";
 import { ThemedButtonGroup } from "@/presentation/theme/components/ThemedButtonGroup";
-import { Ionicons } from "@expo/vector-icons";
-import { Redirect, useLocalSearchParams, useNavigation } from "expo-router";
+import {
+  Redirect,
+  router,
+  useLocalSearchParams,
+  useNavigation,
+} from "expo-router";
 import { Formik } from "formik";
 import { useEffect } from "react";
 import {
-    ActivityIndicator,
-    KeyboardAvoidingView,
-    Platform,
-    ScrollView,
-    View,
+  ActivityIndicator,
+  KeyboardAvoidingView,
+  Platform,
+  RefreshControl,
+  ScrollView,
+  View,
 } from "react-native";
 const ProductId = () => {
   const { id } = useLocalSearchParams();
   const navigation = useNavigation();
 
   const { productQuery, productMutation } = useProduct(id.toString());
+  const { selectedImages, clearImages } = useCameraStore();
 
   useEffect(() => {
     navigation.setOptions({
-      headerRight: () => <Ionicons size={24} name="camera-outline" />,
+      headerRight: () => (
+        <MenuIconButton
+          icon="camera-outline"
+          onPress={() => router.push("/camera")}
+        />
+      ),
     });
   }, []);
-
+  useEffect(() => {
+    return () => {
+      clearImages();
+    };
+  }, []);
   useEffect(() => {
     if (productQuery.data) {
       navigation.setOptions({ title: productQuery.data.title });
@@ -47,19 +64,32 @@ const ProductId = () => {
   }
 
   const product = productQuery.data!;
-
   return (
     <Formik
       initialValues={product}
-      onSubmit={productMutation.mutate}
+      onSubmit={(productLike) =>
+        productMutation.mutate({
+          ...productLike,
+          images: [...productLike.images, ...selectedImages],
+        })
+      }
     >
       {({ values, handleSubmit, handleChange, setFieldValue }) => (
         <KeyboardAvoidingView
           behavior={Platform.OS === "ios" ? "padding" : undefined}
         >
-          <ScrollView>
+          <ScrollView
+            refreshControl={
+              <RefreshControl
+                refreshing={productQuery.isLoading}
+                onRefresh={async () => {
+                  await productQuery.refetch();
+                }}
+              />
+            }
+          >
             {/* todo images */}
-            <ProductImages images={values.images} />
+            <ProductImages images={[...product.images, ...selectedImages]} />
 
             <ThemedView style={{ marginHorizontal: 20, marginTop: 20 }}>
               <ThemedTextInput
